@@ -1,0 +1,83 @@
+import random
+import os
+
+class User:
+    def __init__(self, name, score):
+        self.name = name
+        self.score = score
+
+    def assign_score(self, score):
+        self.score = score
+
+    def display_properties(self):
+        print("Properties of the User:")
+        print("Name:", self.name)
+        print("Score:", self.score)
+
+    def save_to_leaderboard(self, filename="leaderboard.txt"):
+        with open(filename, "a") as file:
+            file.write(f"{self.name}: {self.score}\n")
+
+    def read_leaderboard(filename="leaderboard.txt"):
+        if not os.path.exists(filename):
+            print("Leaderboard file not found. Creating a new one.")
+            open(filename, 'w').close()
+        try:
+            with open(filename, "r") as file:
+                print("Leaderboard:")
+                print(file.read())
+        except FileNotFoundError:
+            print("Leaderboard file not found.")
+
+# Asks for user name
+print("Please input your name")
+name_input = input()
+
+#Sets and creates user
+user1 = User(name_input, 0)
+
+def guess_the_number():
+#Main Loop
+    while True:
+#Picks a ramdom number from 1 to 100
+        number_to_guess = random.randint(1, 100)
+        attempts = 0
+
+        print("                                                                   ")
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print("Welcome to the Guess the Number Game")
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print("                                                                   ")
+        print("I have picked a number between 1 and 100. Can you guess what it is? (enter 'L' if you want to see leaderboard)")
+        print("                                                                   ")
+
+        while True:
+            user_input = input("Enter your guess or 'L': ").strip()
+            if user_input.lower() == 'l':
+                User.read_leaderboard()
+                continue
+
+            try:
+                user_guess = int(user_input)
+                attempts += 1
+                # Check if the guess is correct
+                if user_guess < number_to_guess:
+                    print("Higher!")
+                elif user_guess > number_to_guess:
+                    print("Lower!")
+                else:
+                    print(f"Congratulations! Your final score is {attempts}.")
+                    user1.assign_score(attempts)
+                    user1.save_to_leaderboard()
+                    break
+            except ValueError:
+                print("Invalid input. Please enter a numeric value or 'L'.")
+
+        # Ask if the user wants to play again
+        play_again = input("Would you like to play again? (y/n): ").strip().lower()
+        if play_again != 'y':
+            print("Thanks for playing! Goodbye.")
+            break
+
+# Start the game
+guess_the_number()
