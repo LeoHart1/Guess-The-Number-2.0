@@ -1,8 +1,9 @@
 import random
 import os
 
+#setting up class and user
 class User:
-    def __init__(self, name, score):
+    def __init__(self, name, score=0):
         self.name = name
         self.score = score
 
@@ -11,73 +12,130 @@ class User:
 
     def display_properties(self):
         print("Properties of the User:")
-        print("Name:", self.name)
-        print("Score:", self.score)
+        print(f"Name: {self.name}")
+        print(f"Score: {self.score}")
 
     def save_to_leaderboard(self, filename="leaderboard.txt"):
-        with open(filename, "a") as file:
-            file.write(f"{self.name}: {self.score}\n")
-
-    def read_leaderboard(filename="leaderboard.txt"):
+# Ensure the leaderboard file exists
         if not os.path.exists(filename):
             print("Leaderboard file not found. Creating a new one.")
             open(filename, 'w').close()
+
+        leaderboard = []
+# Read the existing leaderboard
+        with open(filename, "r") as file:
+            for line in file.readlines():
+                parts = line.strip().split(": ")
+                if len(parts) == 2:
+                    name, score = parts
+                    leaderboard.append((name, int(score)))
+
+# Check if user is already on the leaderboard and update or append
+        user_found = False
+        for i, (name, score) in enumerate(leaderboard):
+            if name == self.name:
+                leaderboard[i] = (self.name, self.score)
+                user_found = True
+                break
+
+#allows to add user
+        if not user_found:
+            leaderboard.append((self.name, self.score))
+
+# Sort leaderboard by attempts
+        leaderboard.sort(key=lambda x: x[1])
+
+# Write updated leaderboard to the file
+        with open(filename, "w") as file:
+            for name, score in leaderboard:
+                file.write(f"{name}: {score}\n")
+
+    def read_leaderboard(filename="leaderboard.txt"):
+# If leaderboard file doesn't exist, notify the user
+        if not os.path.exists(filename):
+            print("Leaderboard file not found.")
+            return
+        
         try:
             with open(filename, "r") as file:
-                print("Leaderboard:")
-                print(file.read())
+                leaderboard = []
+                for line in file.readlines():
+                    parts = line.strip().split(": ")
+                    if len(parts) == 2:
+                        name, score = parts
+                        leaderboard.append((name, int(score)))
+
+# Order leaderboard by attempts 
+                leaderboard.sort(key=lambda x: x[1])
+
+# Display for leaderboard
+                print("\nLeaderboard:")
+                rank = 1  # Start from rank 1
+                for name, score in leaderboard:
+                    print(f"{rank}. {name} - {score} attempts")
+                    rank += 1  # Increment rank for the next player
+
         except FileNotFoundError:
             print("Leaderboard file not found.")
+            return
 
-# Asks for user name
-print("Please input your name")
-name_input = input()
+# Ask for user name
+print("Please input your name:")
+name_input = input().strip()
 
-#Sets and creates user
-user1 = User(name_input, 0)
+# Creates a user
+user1 = User(name_input)
 
+#Main Function
 def guess_the_number():
-#Main Loop
     while True:
-#Picks a ramdom number from 1 to 100
+# picks a random number between 1 and 100
         number_to_guess = random.randint(1, 100)
+
         attempts = 0
 
-        print("                                                                   ")
+#Main Menu
+        print("                                    ")
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print("Welcome to the Guess the Number Game")
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print("                                                                   ")
-        print("I have picked a number between 1 and 100. Can you guess what it is? (enter 'L' if you want to see leaderboard)")
-        print("                                                                   ")
-
+        print("                                                                  ")
+        print("I have picked a number between 1 and 100. What do you think it is?")
+        print("                                                                  ")
+        print("Type 'L' to view the leaderboard at any time.")
+        print("                                                                  ")
+    
         while True:
             user_input = input("Enter your guess or 'L': ").strip()
+
             if user_input.lower() == 'l':
                 User.read_leaderboard()
-                continue
+                continue 
 
             try:
                 user_guess = int(user_input)
+#counts attempts 
                 attempts += 1
-                # Check if the guess is correct
+#Says higher is guess to low
                 if user_guess < number_to_guess:
                     print("Higher!")
+#Says Lower if guess to high
                 elif user_guess > number_to_guess:
                     print("Lower!")
                 else:
-                    print(f"Congratulations! Your final score is {attempts}.")
+#If correct break loop 
+                    print(f"Congratulations! You guessed it in {attempts} attempts.")
                     user1.assign_score(attempts)
                     user1.save_to_leaderboard()
                     break
+#filters for invalid inputs
             except ValueError:
-                print("Invalid input. Please enter a numeric value or 'L'.")
+                print("Invalid input. Please enter a number or 'L'.")
 
-        # Ask if the user wants to play again
-        play_again = input("Would you like to play again? (y/n): ").strip().lower()
+#loop to play again
+        play_again = input("Would you like to play again? (Y/N): ").strip().lower()
         if play_again != 'y':
             print("Thanks for playing! Goodbye.")
             break
 
-# Start the game
 guess_the_number()
